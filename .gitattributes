@@ -1,0 +1,5 @@
+# Hooks e scripts sao executados por bash: CRLF quebra com "\r: command not found".
+*.sh text eol=lf
+
+# PowerShell e indiferente, mas CRLF e o padrao da plataforma.
+*.ps1 text eol=crlf

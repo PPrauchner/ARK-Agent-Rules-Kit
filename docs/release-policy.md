@@ -88,5 +88,6 @@ Resumo de uma linha por release; as notas completas estão na aba *Releases*.
 | `v4.0.8` | `/review-pr` genérico: baseline via tracker/`domain.md`, branch restaurada por nome, briefs sem stack presumida. |
 | `v4.0.9` | `/afk-queue` alinhado ao pipeline: checklist permitido no unattended, exceções de TDD espelhadas, validação de worktree perguntada. |
 | `v4.1.0` | `/update-claude` preciso: origem pelo marcador, tronco sem `gh`. Calibragem de projeto sai de `commands/` para `rules/work-calibration.md`. |
+| `v5.0.0` | Instalação global: comando novo `/sync-global`, instaladores `install-global.{sh,ps1}` e `ARK_HOME`. O kit passa a valer em qualquer diretório sem copiar `.claude/`. |
 
-**Próxima:** skill/comando novo → `v5.0.0`; alteração → `v4.1.1`.
+**Próxima:** skill/comando novo → `v6.0.0`; alteração → `v5.0.1`.

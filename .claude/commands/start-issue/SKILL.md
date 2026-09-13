@@ -77,9 +77,9 @@ Uma confirmação só, para tudo. **Aguarde.**
 Só **depois** da confirmação, os três efeitos colaterais, nesta ordem:
 
 ```bash
-echo "$ARGUMENTS" > .claude/current-issue
-bash .claude/scripts/board-move.sh $ARGUMENTS in-progress
-bash .claude/scripts/ensure-branch.sh issue $ARGUMENTS "<título da issue>"
+mkdir -p .claude && echo "$ARGUMENTS" > .claude/current-issue
+bash "${ARK_HOME:-.claude}/scripts/board-move.sh" $ARGUMENTS in-progress
+bash "${ARK_HOME:-.claude}/scripts/ensure-branch.sh" issue $ARGUMENTS "<título da issue>"
 ```
 
 **`board-move.sh`** move a issue para *In progress* no GitHub Projects. É silencioso

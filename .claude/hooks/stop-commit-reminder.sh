@@ -3,7 +3,11 @@
 # Verifica se há mudanças não commitadas ao encerrar a sessão.
 # Se houver, avisa o usuário com um resumo do que está pendente.
 
-ROOT=$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null)
+# Resolve o repositório do PROJETO em sessão, não o do próprio script: com o hook
+# registrado globalmente (~/.claude/settings.json), "$(dirname "$0")" apontaria
+# sempre para o clone do ARK. CLAUDE_PROJECT_DIR vem do Claude Code; o cwd é o
+# fallback para invocação manual.
+ROOT=$(git -C "${CLAUDE_PROJECT_DIR:-$PWD}" rev-parse --show-toplevel 2>/dev/null)
 
 if [ -z "$ROOT" ]; then
     exit 0

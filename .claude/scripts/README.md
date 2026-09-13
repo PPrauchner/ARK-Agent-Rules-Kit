@@ -30,6 +30,28 @@ Utilitários chamados **por um comando** (ou por você, na mão). Diferente dos
   `~/.claude/skills`, deixando as skills deste projeto disponíveis em qualquer outro.
   Preferência pessoal, não etapa obrigatória: sem rodar, as skills seguem funcionando
   a partir da cópia local.
+- **[install-global.sh](./install-global.sh)** / **[install-global.ps1](./install-global.ps1)**
+  — instalação global (Linux/macOS e Windows). Fazem o mesmo, e vão além do que o
+  `link-skills.sh` faz: ligam `skills/*` **e** `commands/*` em
+  `~/.claude/skills` (o diretório `~/.claude/commands/` só registra `.md` soltos —
+  pasta com `SKILL.md` não vira comando lá), registra os hooks em
+  `~/.claude/settings.json` com caminho absoluto, grava `ARK_HOME` e os toggles no
+  bloco `env`, e importa o `karpathy-principles.md` no `~/.claude/CLAUDE.md`.
+  Idempotente; **poda** links órfãos de skill renomeada ou removida do ARK (só os
+  que apontam para dentro deste clone — skill de outra origem não é tocada); nunca
+  apaga pasta real de mesmo nome.
+  Chamados pelo `/sync-global`, ou na mão:
+  ```bash
+  bash .claude/scripts/install-global.sh              # instala
+  bash .claude/scripts/install-global.sh --dry-run    # mostra sem escrever
+  bash .claude/scripts/install-global.sh --uninstall  # desfaz
+  ```
+  ```powershell
+  powershell -File .\.claude\scripts\install-global.ps1 [-DryRun|-Uninstall]
+  ```
+  O `.sh` precisa de `python3` para mesclar o `settings.json` sem apagar o que já
+  está lá; o `.ps1` tenta symlink e cai para *junction* quando o Modo Desenvolvedor
+  está desligado (junction dispensa administrador).
 - **[list-skills.sh](./list-skills.sh)** — lista os `SKILL.md` presentes em
   `.claude/`, comandos incluídos. Útil para conferir o que a pasta realmente carrega.
 

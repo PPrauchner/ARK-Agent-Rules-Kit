@@ -8,6 +8,7 @@ Commands de workflow
 - **[open-pr](./open-pr/SKILL.md)** — Abre o PR da branch atual, descobrindo nos rodapés dos commits quais issues foram implementadas, e move essas issues para *In review*.
 - **[review-pr](./review-pr/SKILL.md)** — Revisa um PR quanto à conformidade com a issue/DoD e a documentação, delegando a análise de qualidade de código a um subagente sobre o PR inteiro, e executa a ação escolhida no GitHub. Com 2+ issues, avalia cada uma em um subagente paralelo.
 - **[update-claude](./update-claude/SKILL.md)** — Atualiza o `.claude/` deste repositório para a versão vigente do template, preservando as customizações do projeto. Fora do pipeline: roda quando quiser, sem argumentos.
+- **[sync-global](./sync-global/SKILL.md)** — Atualiza a [instalação global](../../README.md#instalação-global-sem-copiar-claude-por-projeto): puxa o clone do ARK e refaz os links em `~/.claude/skills`, trazendo skill nova e podando órfã. Fora do pipeline, e o par do `/update-claude` para o outro modelo de reuso — este escreve no perfil do usuário, aquele no `.claude/` de um projeto. Sem argumentos.
 
 ## Pipeline
 

@@ -85,7 +85,7 @@ gh pr create --title "<título>" --body "<corpo>" --base <base>
 ### 6. Mover as issues no board
 Para **cada** issue descoberta no passo 2:
 ```bash
-bash .claude/scripts/board-move.sh <N> in-review
+bash "${ARK_HOME:-.claude}/scripts/board-move.sh" <N> in-review
 ```
 O script é silencioso quando `BOARD_SYNC=off` e nunca falha o comando — se o board
 não estiver configurado, ou se o tracker deste repo não for GitHub, ele avisa e o PR

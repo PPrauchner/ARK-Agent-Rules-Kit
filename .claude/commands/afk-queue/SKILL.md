@@ -49,7 +49,7 @@ Only **after** the go-ahead, and only in sequential mode (in parallel mode each
 worktree is already isolated — see [Parallel mode](#parallel-mode)):
 
 ```bash
-bash .claude/scripts/ensure-branch.sh afk <issue numbers, space-separated>
+bash "${ARK_HOME:-.claude}/scripts/ensure-branch.sh" afk <issue numbers, space-separated>
 ```
 
 The script creates `afk/<numbers>` off the current branch **only** if that branch is

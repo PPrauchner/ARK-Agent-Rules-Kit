@@ -34,7 +34,7 @@ aqui e preserva o que o projeto customizou (ver
   orquestrando o trecho `start-issue → commit` para uma fila inteira de issues.
   Começando de um tronco (`main`, `dev`, …), a entrada do pipeline cria a branch de
   trabalho sozinha — ver o toggle [`AUTO_BRANCH`](#toggles).
-  Fora do pipeline, `/update-claude`. Detalhes em
+  Fora do pipeline, `/update-claude` e `/sync-global`. Detalhes em
   [`commands/README.md`](.claude/commands/README.md).
 - **`.claude/hooks/`** — o que roda sozinho em eventos da sessão (lembrete de commit
   ao encerrar, log das sessões de grill) — ver
@@ -112,6 +112,10 @@ Comportamentos que chegam **ligados** ao copiar a pasta. Desligam-se com `off`
 | `GRILL_LOG` | Sessões de grill não são registradas em `docs/grills_logs/`. |
 | `AUTO_BRANCH` | `/start-issue` e `/afk-queue` não criam branch: implementam na branch em checkout, mesmo que seja o tronco. |
 
+Além deles, a [instalação global](#instalação-global-sem-copiar-claude-por-projeto)
+grava `ARK_HOME` no mesmo bloco — o caminho absoluto desta pasta `.claude/`, usado
+pelos comandos para achar `scripts/` de dentro de qualquer projeto.
+
 ## Arquivos gerados
 
 Aparecem dentro de `.claude/` conforme você usa o template — nenhum precisa ser
@@ -139,14 +143,100 @@ Não há breaking change a sinalizar: quem consome é o `/update-claude`, e ele 
 o que o projeto customizou independentemente do número. Para saber qual versão um
 projeto carrega, veja o `.claude/.template.json` dele.
 
-### Skills disponíveis globalmente (opcional)
+## Instalação global (sem copiar `.claude/` por projeto)
 
-Preferência pessoal, não uma etapa obrigatória do reuso: rodar
-`.claude/scripts/link-skills.sh` cria symlinks de `skills/*` para
-`~/.claude/skills`, deixando as skills disponíveis em qualquer projeto sem
-precisar copiá-las. Quem não usar essa estratégia simplesmente não roda o
-script — as skills continuam funcionando normalmente a partir da cópia local
-em `.claude/skills/`.
+Alternativa ao [modelo de cópia](#modelo-de-reuso): em vez de colar a pasta em cada
+repositório, o kit inteiro fica ligado ao seu perfil de usuário e vale em qualquer
+diretório — inclusive fora de repositório Git.
+
+### Passo a passo
+
+**1. Clone onde ele vai morar.** Os links apontam para este caminho, então escolha um
+lugar definitivo (mover o clone depois quebra tudo e pede uma reinstalação):
+
+```bash
+git clone https://github.com/PPrauchner/ARK-Agent-Rules-Kit.git ~/ark
+cd ~/ark
+```
+
+**2. Rode o instalador da sua plataforma:**
+
+```bash
+bash .claude/scripts/install-global.sh              # Linux/macOS
+```
+```powershell
+powershell -File .\.claude\scripts\install-global.ps1   # Windows
+```
+
+Os dois aceitam `--dry-run`/`-DryRun` (mostra sem escrever) e
+`--uninstall`/`-Uninstall` (desfaz tudo, sem tocar no clone). São idempotentes: rodar
+duas vezes não duplica nada.
+
+**3. Reinicie o `claude`** e confira com `/help` — devem aparecer `/tdd`, `/commit`,
+`/start-issue`, `/grill-me` e companhia, em qualquer diretório.
+
+> **Pré-requisitos além dos [gerais](#pré-requisitos):** `python3` no Linux/macOS
+> (para mesclar o `settings.json` sem apagar o que já está lá) e PowerShell 5.1+ no
+> Windows — o que já vem com o sistema serve, e o executável dele é `powershell`;
+> `pwsh` só existe se você tiver instalado o PowerShell 7 à parte. Lá o script tenta *symlink* e cai para *junction* se o Modo Desenvolvedor
+> estiver desligado — junction não exige administrador, então **não é preciso abrir o
+> terminal como admin**.
+
+### O que o instalador faz
+
+1. **Skills e comandos** viram links em `~/.claude/skills/`. Os dois vão para o
+   mesmo lugar de propósito: `~/.claude/commands/` só registra arquivos `.md`
+   soltos, e os comandos daqui são pastas com `SKILL.md`. Como skill pessoal
+   continuam sendo chamados por `/commit`, `/start-issue`, `/review-pr`, …
+2. **Hooks** são registrados em `~/.claude/settings.json` com caminho absoluto.
+3. **`ARK_HOME`** e os [toggles](#toggles) vão para o bloco `env` global.
+4. **`karpathy-principles.md`** é importado por `@caminho` no `~/.claude/CLAUDE.md`
+   — no Windows um import evita o symlink de arquivo, que exige privilégio.
+
+Nenhum arquivo é copiado, e nada é apagado sem aviso: pasta real de mesmo nome em
+`~/.claude/skills` é pulada, e só links que apontam para dentro do clone são
+removidos — skill sua de outra origem fica intacta.
+
+### Como atualizar
+
+Rode **`/sync-global`** de qualquer lugar. Ele puxa o clone e refaz os links, trazendo
+skill nova e podando a que foi renomeada ou removida. O equivalente na mão é
+`git pull` no clone + o instalador de novo.
+
+Na maior parte das vezes nem isso é necessário — os links apontam para os arquivos do
+clone, então alteração em skill existente já vale sozinha:
+
+| Você… | Precisa de `/sync-global`? |
+|-------|----------------------------|
+| edita uma skill existente | **não** — o link aponta para o arquivo, vale na próxima sessão |
+| dá `git pull` com skills alteradas | **não**, mesmo motivo |
+| adiciona skill ou comando novo | **sim** — falta o link |
+| renomeia ou remove uma skill | **sim** — sobra link órfão |
+
+O `/update-claude` **não** faz esse trabalho e nem deve: por decisão dele, nunca
+escreve fora do repositório. Os dois são pares de modelos diferentes — `/update-claude`
+atualiza o `.claude/` de um projeto que copiou, `/sync-global` atualiza os links no
+perfil do usuário.
+
+### O que continua sendo do projeto
+
+A instalação global cobre o que é genérico. O que descreve **um** repositório não
+pode morar no perfil do usuário, e continua sendo criado projeto a projeto — pela
+skill `adopt-repo` ou pela `setup-matt-pocock-skills`:
+
+| Artefato | Por quê |
+|----------|---------|
+| `CLAUDE.md`, `CONTEXT.md` | stack, comandos, glossário de domínio |
+| `docs/agents/` (`issue-tracker.md`, `domain.md`, `triage-labels.md`) | onde ficam as issues deste repo e com que vocabulário |
+| `rules/code-conventions.md` → "Restrições deste projeto" | preenchido do zero por projeto |
+| `rules/work-calibration.md` | limiar de quebra de issue **deste** projeto |
+| `rules/<linguagem>-conventions.md` | depende da stack |
+| `.claude/settings.local.json` | permissões com caminhos da máquina |
+| `.claude/current-issue`, `.claude/board.env` | estado de sessão / cache do board |
+
+Os scripts chamados pelos comandos resolvem por `${ARK_HOME:-.claude}`: com a
+instalação global apontam para o clone; numa cópia local antiga, para o `.claude/`
+do projeto. Os dois modelos convivem.
 
 ## Manutenção deste repositório
 
