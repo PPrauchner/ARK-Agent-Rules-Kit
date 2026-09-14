@@ -85,4 +85,6 @@ Resumo de uma linha por release; as notas completas estão na aba *Releases*.
 | `v4.1.0` | `/update-claude` preciso: origem pelo marcador, tronco sem `gh`. Calibragem de projeto sai de `commands/` para `rules/work-calibration.md`. |
 | `v5.0.0` | Instalação global: comando novo `/sync-global`, instaladores `install-global.{sh,ps1}` e `ARK_HOME`. O kit passa a valer em qualquer diretório sem copiar `.claude/`. |
 
-**Próxima:** skill/comando novo → `v6.0.0`; alteração → `v5.0.1`.
+| `v6.0.0` | Instalação global vira o **único** modelo: `/update-claude` removido, `adopt-repo` cria e migra o `.claude/` do projeto, `code-conventions.md` partido em genérico importado + `project-constraints.md`. |
+
+**Próxima:** skill/comando novo ou removido → `v7.0.0`; alteração → `v6.0.1`.
