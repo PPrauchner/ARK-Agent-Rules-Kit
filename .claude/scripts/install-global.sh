@@ -8,7 +8,7 @@
 #   bash .claude/scripts/install-global.sh --uninstall  # desfaz
 #
 # Diferente do link-skills.sh, que só liga skills/: este liga também commands/,
-# registra os hooks, grava ARK_HOME e os toggles, e importa o karpathy-principles.
+# registra os hooks, grava ARK_HOME e os toggles, e importa as rules genéricas.
 set -euo pipefail
 
 DRY_RUN=0
@@ -123,26 +123,41 @@ PY
 }
 
 # --- CLAUDE.md --------------------------------------------------------------
-karpathy_import() {  # $1 = install|uninstall
-  local line="@$ARK_HOME_DIR/rules/karpathy-principles.md"
-  local tmp
+# As rules genéricas do ARK entram por import, não por cópia: melhoria no clone vale
+# em toda sessão, e o .claude/ do projeto só guarda o que descreve o projeto.
+ARK_RULE_IMPORTS="karpathy-principles.md code-conventions.md"
+
+rules_import() {  # $1 = install|uninstall
+  local rule line tmp missing=0
   if [ "$1" = uninstall ]; then
     [ -f "$CLAUDE_MD" ] || return 0
-    grep -q 'karpathy-principles\.md' "$CLAUDE_MD" || return 0
-    [ "$DRY_RUN" = 1 ] && { say "[dry-run] removeria o import do CLAUDE.md"; return 0; }
+    grep -q '^<!-- ARK -->$' "$CLAUDE_MD" || return 0
+    [ "$DRY_RUN" = 1 ] && { say "[dry-run] removeria os imports do CLAUDE.md"; return 0; }
     tmp="$(mktemp)"
-    grep -v -e 'karpathy-principles\.md' -e '^<!-- ARK -->$' "$CLAUDE_MD" > "$tmp"
+    grep -v -e "^@$ARK_HOME_DIR/rules/" -e '^<!-- ARK -->$' "$CLAUDE_MD" > "$tmp"
     mv "$tmp" "$CLAUDE_MD"
-    say "import removido"
+    say "imports removidos"
     return 0
   fi
-  if [ -f "$CLAUDE_MD" ] && grep -qxF "$line" "$CLAUDE_MD"; then
-    say "import já presente"; return 0
-  fi
-  [ "$DRY_RUN" = 1 ] && { say "[dry-run] acrescentaria o import ao CLAUDE.md"; return 0; }
+  for rule in $ARK_RULE_IMPORTS; do
+    line="@$ARK_HOME_DIR/rules/$rule"
+    if [ ! -f "$CLAUDE_MD" ] || ! grep -qxF "$line" "$CLAUDE_MD"; then missing=1; fi
+  done
+  [ "$missing" = 0 ] && { say "imports já presentes"; return 0; }
+  [ "$DRY_RUN" = 1 ] && { say "[dry-run] acrescentaria os imports ao CLAUDE.md"; return 0; }
   mkdir -p "$CLAUDE_HOME"
-  printf '<!-- ARK -->\n%s\n' "$line" >> "$CLAUDE_MD"
-  say "import de karpathy-principles.md adicionado"
+  # Reescreve o bloco inteiro: assim uma rule nova entra numa reinstalação sem
+  # duplicar as que já estavam lá.
+  if [ -f "$CLAUDE_MD" ]; then
+    tmp="$(mktemp)"
+    grep -v -e "^@$ARK_HOME_DIR/rules/" -e '^<!-- ARK -->$' "$CLAUDE_MD" > "$tmp"
+    mv "$tmp" "$CLAUDE_MD"
+  fi
+  printf '<!-- ARK -->\n' >> "$CLAUDE_MD"
+  for rule in $ARK_RULE_IMPORTS; do
+    printf '@%s/rules/%s\n' "$ARK_HOME_DIR" "$rule" >> "$CLAUDE_MD"
+  done
+  say "imports das rules genéricas atualizados ($ARK_RULE_IMPORTS)"
 }
 
 # ============================================================== execução
@@ -161,7 +176,7 @@ if [ "$UNINSTALL" = 1 ]; then
 
   head_ "Limpando settings.json e CLAUDE.md"
   merge_settings uninstall
-  karpathy_import uninstall
+  rules_import uninstall
   printf '\nDesinstalado. O clone em %s não foi tocado.\n' "$REPO_ROOT"
   exit 0
 fi
@@ -175,9 +190,20 @@ while IFS= read -r src; do
   name="$(basename "$src")"
   target="$SKILLS_DIR/$name"
   if [ -e "$target" ] && [ ! -L "$target" ]; then
-    echo "  PULADO: $target existe como pasta real (não é link)." >&2
-    skipped=$((skipped + 1))
-    continue
+    # Pasta real idêntica ao clone é cópia redundante de instalação antiga: trocar
+    # por link não perde nada. Qualquer diferença faz a pasta ser respeitada.
+    if diff -rq "$target" "$src" >/dev/null 2>&1; then
+      if [ "$DRY_RUN" = 1 ]; then
+        say "trocaria por link $name (cópia idêntica ao clone)"
+      else
+        rm -rf "$target"
+        say "cópia idêntica trocada por link: $name"
+      fi
+    else
+      echo "  PULADO: $target existe como pasta real e diferente do clone." >&2
+      skipped=$((skipped + 1))
+      continue
+    fi
   fi
   run ln -sfn "$src" "$target"
   say "$name"
@@ -201,7 +227,7 @@ say "env: ARK_HOME + 4 toggles"
 say "hooks: Stop + UserPromptExpansion (caminho absoluto)"
 
 head_ "CLAUDE.md"
-karpathy_import install
+rules_import install
 
 printf '\nPronto: %s link(s), %s órfão(s) removido(s), %s pulado(s).\n' "$created" "$pruned" "$skipped"
 printf 'Skill alterada: nada a fazer, o link já aponta para o clone.\n'

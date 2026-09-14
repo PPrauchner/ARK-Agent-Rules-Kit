@@ -12,7 +12,8 @@
        pessoais e continuam sendo chamados como /commit, /start-issue, ...)
     - registra os hooks do ARK em ~/.claude/settings.json com caminho absoluto
     - define os toggles (BOARD_SYNC, AUTO_BRANCH, ...) e ARK_HOME no bloco env
-    - importa rules/karpathy-principles.md em ~/.claude/CLAUDE.md
+    - importa as rules genericas (karpathy-principles.md, code-conventions.md)
+      em ~/.claude/CLAUDE.md
 
   Nada e copiado: sao links para o clone, entao "git pull" aqui atualiza tudo.
   Links existentes sao refeitos; pastas REAIS de mesmo nome em ~/.claude/skills
@@ -66,6 +67,32 @@ function Write-Head($msg) { Write-Host ""; Write-Host $msg -ForegroundColor Cyan
 
 # ---------------------------------------------------------------- links
 
+# Pasta real em ~/.claude/skills cujo conteudo e byte-a-byte igual ao do clone e
+# copia redundante de uma instalacao antiga: trocar por link nao perde nada. Qualquer
+# diferenca, por menor que seja, faz a pasta ser respeitada como conteudo do usuario.
+function Test-SameTree {
+    param([string]$A, [string]$B)
+
+    $fa = @(Get-ChildItem -LiteralPath $A -Recurse -File -Force -ErrorAction SilentlyContinue)
+    $fb = @(Get-ChildItem -LiteralPath $B -Recurse -File -Force -ErrorAction SilentlyContinue)
+    if ($fa.Count -ne $fb.Count -or $fa.Count -eq 0) { return $false }
+
+    # Caminho relativo normalizado: os dois lados passam pela mesma conta, entao o
+    # separador inicial que sobra e o mesmo nos dois e nao atrapalha a comparacao.
+    $rel = { param($root, $f) (ConvertTo-PosixPath $f.FullName.Substring($root.Length)) }
+    $mapB = @{}
+    foreach ($f in $fb) { $mapB[(& $rel $B $f)] = $f.FullName }
+
+    foreach ($f in $fa) {
+        $key = & $rel $A $f
+        if (-not $mapB.ContainsKey($key)) { return $false }
+        $ha = (Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash
+        $hb = (Get-FileHash -LiteralPath $mapB[$key] -Algorithm SHA256).Hash
+        if ($ha -ne $hb) { return $false }
+    }
+    return $true
+}
+
 function New-DirLink {
     param([string]$Link, [string]$Target)
 
@@ -73,9 +100,17 @@ function New-DirLink {
     if ($item) {
         $isLink = $item.LinkType -in @('SymbolicLink', 'Junction')
         if (-not $isLink) {
-            Write-Warning "PULADO: $Link existe como pasta real (nao e link). Mova/apague na mao se quiser linkar."
-            return 'skipped'
+            if (-not (Test-SameTree $item.FullName $Target)) {
+                Write-Warning "PULADO: $Link existe como pasta real e diferente do clone. Mova/apague na mao se quiser linkar."
+                return 'skipped'
+            }
+            if ($DryRun) { Write-Step "trocaria por link $($item.Name) (copia identica ao clone)"; return 'adopted' }
+            Remove-Item -LiteralPath $item.FullName -Recurse -Force
+            Write-Step "copia identica trocada por link: $($item.Name)"
+            $item = $null
         }
+    }
+    if ($item) {
         if ($DryRun) { Write-Step "religaria $($item.Name)"; return 'relinked' }
         # Remove-Item em link de diretorio: -Recurse aqui apaga so o link, nao o alvo,
         # mas .Delete() e mais explicito e seguro.
@@ -194,10 +229,17 @@ function Add-ArkHooks($settings) {
 
 # ------------------------------------------------------------- CLAUDE.md
 
-function Set-KarpathyImport([string]$ClaudeMd, [bool]$Remove) {
-    $line = "@$(ConvertTo-PosixPath (Join-Path $ArkHome 'rules/karpathy-principles.md'))"
+# As rules genericas do ARK entram por import, nao por copia: assim melhoria no clone
+# vale em toda sessao, e o .claude/ do projeto so guarda o que descreve o projeto.
+$ARK_RULE_IMPORTS = @('karpathy-principles.md', 'code-conventions.md')
+
+function Set-RulesImport([string]$ClaudeMd, [bool]$Remove) {
+    $lines = @($ARK_RULE_IMPORTS | ForEach-Object {
+        "@$(ConvertTo-PosixPath (Join-Path $ArkHome "rules/$_"))"
+    })
+    $pattern = '(' + (($ARK_RULE_IMPORTS | ForEach-Object { [regex]::Escape($_) }) -join '|') + ')$'
     $existing = if (Test-Path $ClaudeMd) { Get-Content -LiteralPath $ClaudeMd -Encoding UTF8 } else { @() }
-    $clean = @($existing | Where-Object { $_ -notmatch 'karpathy-principles\.md' -and $_ -ne '<!-- ARK -->' })
+    $clean = @($existing | Where-Object { $_ -notmatch $pattern -and $_ -ne '<!-- ARK -->' })
 
     if ($Remove) {
         if ($clean.Count -eq $existing.Count) { return $false }
@@ -205,8 +247,10 @@ function Set-KarpathyImport([string]$ClaudeMd, [bool]$Remove) {
         return $true
     }
 
-    if ($existing -contains $line) { return $false }
-    $out = @($clean + @('<!-- ARK -->', $line))
+    # Reescreve sempre que faltar qualquer um dos imports: assim uma rule nova entra
+    # numa reinstalacao, em vez de depender de -Uninstall antes.
+    if (-not ($lines | Where-Object { $existing -notcontains $_ })) { return $false }
+    $out = @($clean + @('<!-- ARK -->') + $lines)
     if (-not $DryRun) { Write-Utf8Lines $ClaudeMd $out }
     return $true
 }
@@ -242,7 +286,7 @@ if ($Uninstall) {
         if ($settings.env.Count -eq 0) { $settings.Remove('env') }
     }
     Save-Settings $settingsPath $settings
-    Set-KarpathyImport $claudeMd $true | Out-Null
+    Set-RulesImport $claudeMd $true | Out-Null
     Write-Host ""
     Write-Host "Desinstalado. O clone em $RepoRoot nao foi tocado." -ForegroundColor Green
     return
@@ -287,7 +331,7 @@ Write-Step "hooks: Stop + UserPromptExpansion (caminho absoluto)"
 Save-Settings $settingsPath $settings
 
 Write-Head "CLAUDE.md"
-if (Set-KarpathyImport $claudeMd $false) { Write-Step "import de karpathy-principles.md adicionado" }
+if (Set-RulesImport $claudeMd $false) { Write-Step "imports das rules genericas atualizados ($($ARK_RULE_IMPORTS -join ', '))" }
 else { Write-Step "import ja presente" }
 
 Write-Host ""

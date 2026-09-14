@@ -36,10 +36,12 @@ Utilitários chamados **por um comando** (ou por você, na mão). Diferente dos
   `~/.claude/skills` (o diretório `~/.claude/commands/` só registra `.md` soltos —
   pasta com `SKILL.md` não vira comando lá), registra os hooks em
   `~/.claude/settings.json` com caminho absoluto, grava `ARK_HOME` e os toggles no
-  bloco `env`, e importa o `karpathy-principles.md` no `~/.claude/CLAUDE.md`.
+  bloco `env`, e importa as rules genéricas (`karpathy-principles.md`,
+  `code-conventions.md`) no `~/.claude/CLAUDE.md`.
   Idempotente; **poda** links órfãos de skill renomeada ou removida do ARK (só os
-  que apontam para dentro deste clone — skill de outra origem não é tocada); nunca
-  apaga pasta real de mesmo nome.
+  que apontam para dentro deste clone — skill de outra origem não é tocada); pasta
+  real de mesmo nome só vira link se for idêntica ao clone, e qualquer diferença a
+  faz ser pulada com aviso.
   Chamados pelo `/sync-global`, ou na mão:
   ```bash
   bash .claude/scripts/install-global.sh              # instala
