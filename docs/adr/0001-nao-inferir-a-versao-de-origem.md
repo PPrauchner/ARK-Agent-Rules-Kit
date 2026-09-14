@@ -1,5 +1,10 @@
 # Não inferir a versão de origem de um Projeto adotado
 
+> **Superado pelo [ADR 0003](./0003-instalacao-global-como-unico-modelo.md).** O
+> `/update-claude`, que esta decisão governava, foi removido junto com o Modelo de
+> cópia. O princípio continua valendo onde ainda há o que decidir: a migração feita
+> pelo `adopt-repo` não apaga nada por inferência sobre arquivo ausente.
+
 O `/update-claude` precisa saber de qual Versão vigente o projeto partiu para
 distinguir "o Template mudou isto" de "o projeto customizou isto". Como nenhum
 repositório tinha Marcador de origem quando o comando foi criado, a saída óbvia
