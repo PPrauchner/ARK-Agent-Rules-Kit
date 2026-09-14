@@ -7,10 +7,10 @@ description: Atualiza a instalação global do ARK — puxa o clone e refaz os l
 
 Traz a instalação global (`~/.claude/`) para o estado atual do clone do ARK.
 
-É o par do `/update-claude`, para o outro modelo de reuso: o `/update-claude` atualiza
-o `.claude/` **de um projeto que copiou** a pasta; o `/sync-global` atualiza os **links
-no perfil do usuário**. Cada um escreve num lugar, e nenhum dos dois escreve no do
-outro.
+É o **único** caminho de atualização do kit: desde o
+[ADR 0003](../../../docs/adr/0003-instalacao-global-como-unico-modelo.md) a Instalação
+global é o modelo de reuso do ARK, e o `.claude/` de um projeto guarda apenas o que
+descreve aquele projeto — nada que este comando precise atualizar.
 
 Não recebe argumentos.
 
@@ -69,10 +69,11 @@ bash "$ARK_HOME/scripts/install-global.sh"
 Rode primeiro com `-DryRun` / `--dry-run` **se** o passo 2 trouxe commits: assim o
 diff aparece antes de qualquer escrita. Sem commits novos, vá direto.
 
-O instalador é idempotente e conservador — pasta real de mesmo nome em
-`~/.claude/skills` é pulada com aviso, e só links que apontam para dentro do clone
-são podados. Um `PULADO:` no output não é erro do sync: é uma skill de outra origem
-ocupando o nome, e quem resolve é o usuário.
+O instalador é idempotente e conservador. Pasta real de mesmo nome em
+`~/.claude/skills` é comparada com a do clone: idêntica, vira link sem perguntar;
+diferente, é pulada com aviso. Só links que apontam para dentro do clone são podados.
+Um `PULADO:` no output não é erro do sync: é uma skill de outra origem ocupando o
+nome, e quem resolve é o usuário.
 
 ### 4. Fechar
 
@@ -85,7 +86,8 @@ sem reiniciar.
 
 ## Limites
 
-- Não escreve dentro de nenhum projeto. Para isso existe o `/update-claude`.
+- Não escreve dentro de nenhum projeto. Quem cria e migra o `.claude/` de um
+  repositório é a skill `adopt-repo`.
 - Não faz commit nem push no clone do ARK. Se você alterou uma skill e quer publicar,
   isso é `/commit` + `/open-pr` de dentro do clone.
 - Não mexe nas *rules* de projeto nem em `settings.local.json` de lugar nenhum.
