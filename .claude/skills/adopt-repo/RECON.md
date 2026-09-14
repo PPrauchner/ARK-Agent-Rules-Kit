@@ -3,17 +3,47 @@
 O que ler antes de perguntar qualquer coisa. Objetivo: chegar ao grill sabendo tudo
 que o repositório já responde sozinho.
 
-## 1. O que já existe dos seis artefatos
+## 0. Qual ramo
+
+A primeira pergunta é do disco, não do usuário:
+
+```bash
+echo "$ARK_HOME"          # vazio = sem Instalação global: pare e aponte o README
+ls -d .claude 2>/dev/null
+ls .claude/skills .claude/commands 2>/dev/null
+```
+
+| O que você vê | Ramo |
+|---|---|
+| nenhuma `.claude/` | **Adoção** — o caso normal, e o padrão desta skill |
+| `.claude/` com `skills/` ou `commands/` dentro | **Migração** — cópia antiga do kit inteiro |
+| `.claude/` só com `rules/` | já é o estado final — complete o que falta e siga |
+
+**Ausência de `.claude/` não é problema a investigar.** No modelo de Instalação global
+o repositório não tem por que ter essa pasta antes da adoção; é a skill que a cria. Não
+gaste pergunta com isso.
+
+## 1. O que já existe dos sete artefatos
 
 ```bash
 ls CLAUDE.md AGENTS.md CONTEXT.md CONTEXT-MAP.md 2>/dev/null
 ls docs/adr/ docs/agents/ 2>/dev/null
-ls .claude/settings.local.json 2>/dev/null
-grep -n "<preencher>" .claude/rules/code-conventions.md
-ls .claude/rules/
+ls .claude/rules/ .claude/settings.local.json 2>/dev/null
+grep -rn "<preencher>" .claude/rules/ 2>/dev/null
 ```
 
-Um `CONTEXT.md` de 0 byte conta como **inexistente** — é stub, não conteúdo.
+Um `CONTEXT.md` de 0 byte conta como **inexistente** — é stub, não conteúdo. O mesmo
+vale para uma seção que ainda está em `<preencher>`.
+
+No ramo de migração, some a isto a comparação que decide o que apagar:
+
+```bash
+ls "$ARK_HOME/skills" "$ARK_HOME/commands"     # o que vem do perfil
+ls .claude/skills .claude/commands             # o que o projeto copiou
+```
+
+Nome presente nos dois = redundante. Nome só no projeto = **pergunta**, nunca
+exclusão automática.
 
 ## 2. Stack e comandos
 
@@ -33,6 +63,9 @@ Leia o manifesto, não adivinhe pela extensão dos arquivos:
 O lockfile decide o gerenciador de pacotes — `package.json` não diz se é npm ou pnpm.
 Quando houver mais de um lockfile, isso é uma contradição para o grill, não para você
 resolver.
+
+A linguagem detectada aqui decide qual `<linguagem>-conventions.md` é copiado do
+`$ARK_HOME` no passo 7 da skill.
 
 ## 3. Domínio (matéria-prima do grill, não conclusão)
 
@@ -65,3 +98,4 @@ Leve para o grill, sempre:
 - Por que uma dependência ou formato foi escolhido — e se é decisão ou acaso.
 - O que não pode mudar no projeto.
 - Qualquer contradição entre documentação existente e código.
+- No ramo de migração: o que fazer com cada pasta da lista "Do projeto".

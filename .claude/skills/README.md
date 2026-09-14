@@ -2,7 +2,7 @@
 
 Skills I use daily for code work.
 
-- **[adopt-repo](./adopt-repo/SKILL.md)** — Preenche `CLAUDE.md`, `CONTEXT.md`, restrições e demais artefatos quando a pasta `.claude/` é colada num repositório que já estava em andamento: deriva do código o que o código responde e grelha o resto.
+- **[adopt-repo](./adopt-repo/SKILL.md)** — Adota um repositório no ARK: cria o `.claude/` enxuto que a instalação global espera (rules do projeto, `settings.local.json`), preenche `CLAUDE.md`, `CONTEXT.md` e `docs/agents/`, e migra projeto que ainda carrega a cópia antiga do kit inteiro. Deriva do código o que o código responde e grelha o resto.
 - **[diagnose](./diagnose/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
 - **[grill-with-docs](./grill-with-docs/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `CONTEXT.md` and ADRs inline.
 - **[triage](./triage/SKILL.md)** — Triage issues through a state machine of triage roles.
