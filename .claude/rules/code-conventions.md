@@ -1,11 +1,13 @@
 # Convenções de Código
 
-> Lido pelo agente ao escrever ou revisar código. Para o modelo de domínio, ver
-> `CONTEXT.md`; para as decisões de arquitetura e seus porquês, `docs/adr/`.
+> Genérico do ARK, igual em todo projeto. Importado a partir do clone pela
+> [Instalação global](../../README.md#instalação-global), então melhoria feita aqui
+> vale em toda sessão sem reinstalar nada.
 >
-> As restrições específicas deste projeto devem ser definidas na sessão de *grill
-> with docs* (skill `grill-with-docs`, log em `docs/grills_logs/`) e registradas na
-> seção [Restrições deste projeto](#restrições-deste-projeto) abaixo.
+> O que é **deste** projeto não mora aqui: restrições em
+> [`project-constraints.md`](./project-constraints.md), calibragem de trabalho em
+> [`work-calibration.md`](./work-calibration.md), modelo de domínio em `CONTEXT.md`,
+> decisões e porquês em `docs/adr/`.
 
 ---
 
@@ -21,11 +23,13 @@
 ## Convenções por linguagem
 
 As regras específicas de cada linguagem vivem em arquivos separados, para não
-assumir uma stack que o projeto não usa:
+assumir uma stack que o projeto não usa. Ao contrário deste arquivo, elas são
+**copiadas** para `.claude/rules/` do projeto pela skill `adopt-repo` — só a da
+linguagem que o projeto de fato usa:
 
-- **Python** → [`python-conventions.md`](./python-conventions.md)
-- Outras linguagens: adicionar `rules/<linguagem>-conventions.md` conforme o
-  projeto precisar (ex.: `typescript-conventions.md`).
+- **Python** → `python-conventions.md`
+- Outras linguagens: a `adopt-repo` cria `<linguagem>-conventions.md` no mesmo
+  espírito (documentação, tipagem, naming).
 
 ---
 
@@ -36,19 +40,5 @@ assumir uma stack que o projeto não usa:
 - Constantes em `UPPER_SNAKE_CASE`; variáveis e funções em `snake_case`; classes em
   `PascalCase`.
 - Comentários explicam *por quê*, não *o quê*.
-- Ver também `.claude/rules/karpathy-principles.md` (simplicidade primeiro,
-  mudanças cirúrgicas, execução orientada a metas).
-
----
-
-## Restrições deste projeto
-
-> Preencher na sessão de *grill with docs* deste projeto. Modelo de domínio em
-> [`CONTEXT.md`](../../CONTEXT.md); decisões e porquês em [`docs/adr/`](../../docs/adr/).
->
-> Exemplos do que entra aqui: linguagem/versão, dependências centrais vs.
-> opcionais, tipo de interface (CLI/web/API), formato de persistência,
-> reprodutibilidade, estrutura de pastas — o que for específico e não-óbvio deste
-> projeto.
-
-<preencher>
+- Ver também [`karpathy-principles.md`](./karpathy-principles.md) (simplicidade
+  primeiro, mudanças cirúrgicas, execução orientada a metas).
