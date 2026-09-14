@@ -7,23 +7,35 @@ repositório.
 
 ## Modelo de reuso
 
-**Cópia com atualização sob demanda.** Cada projeto copia esta pasta `.claude/`
-uma vez e diverge livremente dali. Nada se propaga sozinho: quando quiser trazer
-uma versão nova, rode `/update-claude` dentro do projeto — ele aplica o que mudou
-aqui e preserva o que o projeto customizou (ver
-[Como atualizar](#como-atualizar-um-projeto-que-já-copiou)).
+**Instalação global, sem copiar nada.** O kit inteiro fica ligado ao seu perfil de
+usuário (`~/.claude/`) e vale em qualquer diretório — inclusive fora de repositório
+Git. Os links apontam para este clone, então `git pull` aqui já atualiza tudo: skill
+alterada vale na próxima sessão, sem comando nenhum. Ver
+[Instalação global](#instalação-global).
+
+Dentro de cada projeto sobra apenas o que descreve **aquele** repositório — as rules
+do projeto e o `settings.local.json` —, criado pela skill `adopt-repo`.
+
+Até a `v4.1.0` o ARK também era distribuído colando a pasta `.claude/` inteira em cada
+repositório. Esse **Modelo de cópia** foi aposentado pelo
+[ADR 0003](./docs/adr/0003-instalacao-global-como-unico-modelo.md); quem ainda estiver
+nele migra rodando a `adopt-repo` (ver
+[Como migrar](#como-migrar-um-projeto-que-copiou-a-pasta)).
 
 ## O que tem aqui
 
 - **`.claude/rules/`** — convenções de base, carregadas em toda sessão:
   - `karpathy-principles.md` — princípios de comportamento (simplicidade,
     mudanças cirúrgicas, execução orientada a metas).
-  - `code-conventions.md` — convenções gerais (idioma, clean code) + a seção
-    **"Restrições deste projeto"**, que cada projeto preenche do zero (idealmente
-    na sessão da skill `grill-with-docs`).
+  - `code-conventions.md` — convenções gerais (idioma, clean code). Genérico: é
+    importado do clone pela instalação global, então melhoria feita aqui vale em
+    todo projeto.
+  - `project-constraints.md` — semente vazia das **restrições de cada projeto**,
+    copiada para o repositório pela `adopt-repo` e preenchida do zero ali
+    (idealmente na sessão da skill `grill-with-docs`).
   - `python-conventions.md` — docstrings e type hints, só relevante para
-    projetos Python. Para outras stacks, criar `<linguagem>-conventions.md`
-    equivalente.
+    projetos Python. A `adopt-repo` copia para o projeto só o arquivo da linguagem
+    que ele usa; para outras stacks, cria o `<linguagem>-conventions.md` equivalente.
   - `work-calibration.md` — como **este** projeto divide trabalho: limiares de
     quebra de issue e o que conta como camada num commit. Também preenchido do
     zero por cada projeto; lido pelo `/start-issue` e pelo `/commit`.
@@ -34,7 +46,7 @@ aqui e preserva o que o projeto customizou (ver
   orquestrando o trecho `start-issue → commit` para uma fila inteira de issues.
   Começando de um tronco (`main`, `dev`, …), a entrada do pipeline cria a branch de
   trabalho sozinha — ver o toggle [`AUTO_BRANCH`](#toggles).
-  Fora do pipeline, `/update-claude` e `/sync-global`. Detalhes em
+  Fora do pipeline, `/sync-global`. Detalhes em
   [`commands/README.md`](.claude/commands/README.md).
 - **`.claude/hooks/`** — o que roda sozinho em eventos da sessão (lembrete de commit
   ao encerrar, log das sessões de grill) — ver
@@ -59,46 +71,33 @@ aqui e preserva o que o projeto customizou (ver
 - **Board do GitHub Projects (v2)** — *opcional*. Sem ele o `board-move.sh` só avisa
   no stderr e segue; nada no pipeline quebra.
 
-## Como usar num projeto novo
+## Como adotar um repositório
 
-1. Copie a pasta `.claude/` inteira para a raiz do projeto.
-2. Copie `.claude/settings.local.json.example` para `.claude/settings.local.json`
-   e ajuste paths/permissões para aquele projeto.
-3. Preencha "Restrições deste projeto" em `.claude/rules/code-conventions.md`.
-4. Mantenha `python-conventions.md` se o projeto for Python; senão, crie o
-   módulo de linguagem equivalente e remova o que não se aplica.
-5. Revise os [toggles](#toggles) — eles chegam **ligados**.
-
-## Como usar num projeto que já existe
-
-Rode a skill **`adopt-repo`**. Ela faz recon do repositório, deriva o `CLAUDE.md` do
-que o código já responde (stack, comandos, estrutura) e usa uma sessão de
-`grill-with-docs` para o que o código não sabe dizer — o glossário de domínio do
+Faça a [instalação global](#instalação-global) uma vez na máquina; depois, em cada
+repositório, rode a skill **`adopt-repo`**. Ela faz recon do repositório, cria o
+`.claude/` enxuto (as rules daquele projeto e o `settings.local.json`), deriva o
+`CLAUDE.md` do que o código já responde (stack, comandos, estrutura) e usa uma sessão
+de `grill-with-docs` para o que o código não sabe dizer — o glossário de domínio do
 `CONTEXT.md` e as restrições do projeto. Nunca sobrescreve o que já existe: completa
 apenas o que falta e leva contradições para o grill.
 
-## Como atualizar um projeto que já copiou
+**O repositório não precisa ter pasta `.claude/` antes.** É a skill que a cria, e ela
+nasce pequena: nada de skills, comandos, hooks ou scripts, que vêm do seu perfil.
 
-Rode o comando **`/update-claude`** dentro do projeto, sem argumentos. Ele traz o
-`.claude/` para a versão vigente (a tag mais recente daqui) e preserva o que é do
-projeto:
+## Como migrar um projeto que copiou a pasta
 
-- **sobrescreve** skills, comandos, hooks, scripts e o `karpathy-principles.md`;
-- **não toca** no `rules/code-conventions.md` — é ali que mora o modelo de domínio
-  que o projeto escreveu;
-- **acrescenta ao** `settings.json` só as chaves que faltam, mantendo os hooks
-  próprios do projeto (sem isso os hooks novos nunca rodam — hook só existe se
-  estiver registrado ali; os toggles, esses, já valem `on` quando a chave falta);
-- pergunta **uma vez**, numa lista pré-marcada com o motivo de cada sugestão, sobre
-  arquivos do projeto que sumiram da versão nova;
-- grava `.claude/.template.json` com a versão aplicada, para o próximo update saber
-  de onde partiu.
+Rode a mesma skill **`adopt-repo`**. Encontrando um `.claude/` com `skills/` ou
+`commands/` dentro, ela entra no ramo de migração e **enxuga** a pasta:
 
-Se o repositório versiona o `.claude/`, ele fecha com um commit atômico só desses
-caminhos — nunca faz push.
+- **apaga** de `skills/`, `commands/`, `hooks/` e `scripts/` só o que existe hoje no
+  clone — essa cópia sombreia o que vem do perfil, e é a versão velha que roda;
+- **não apaga** o que não existe no clone: pode ser skill escrita naquele projeto ou
+  resto de layout aposentado, e a skill lista e pergunta em vez de adivinhar;
+- **preserva** `rules/`, `settings.local.json` e os arquivos de estado, movendo as
+  "Restrições deste projeto" do antigo `code-conventions.md` para o
+  `project-constraints.md`.
 
-Num repositório que ainda não tem template instalado, `/update-claude` oferece o
-`adopt-repo` como passo opcional antes de instalar.
+Nada é apagado antes de a lista aparecer.
 
 ## Toggles
 
@@ -112,8 +111,7 @@ Comportamentos que chegam **ligados** ao copiar a pasta. Desligam-se com `off`
 | `GRILL_LOG` | Sessões de grill não são registradas em `docs/grills_logs/`. |
 | `AUTO_BRANCH` | `/start-issue` e `/afk-queue` não criam branch: implementam na branch em checkout, mesmo que seja o tronco. |
 
-Além deles, a [instalação global](#instalação-global-sem-copiar-claude-por-projeto)
-grava `ARK_HOME` no mesmo bloco — o caminho absoluto desta pasta `.claude/`, usado
+Além deles, a [instalação global](#instalação-global) grava `ARK_HOME` no mesmo bloco — o caminho absoluto desta pasta `.claude/`, usado
 pelos comandos para achar `scripts/` de dentro de qualquer projeto.
 
 ## Arquivos gerados
@@ -126,9 +124,8 @@ criado à mão:
 | `settings.local.json` | você, a partir do `.example` | **não** — tem caminhos da sua máquina |
 | `current-issue` | `/start-issue` | **não** — estado da sessão |
 | `board.env` | `board-move.sh` (cache dos IDs do board) | **não** — específico do repositório |
-| `.template.json` | já vem na cópia (tag da release); `/update-claude` reescreve | **sim** — sem ele o próximo update não sabe de onde partiu |
 
-Os três primeiros já estão em `.claude/.gitignore`, que viaja junto na cópia.
+Todos já estão em `.claude/.gitignore`, que a `adopt-repo` copia junto.
 
 ## Versões
 
@@ -139,15 +136,14 @@ descrevendo o que mudou e por quê. A numeração é um **odômetro, não semver
 - **PATCH** — alteração de skill ou comando existente.
 - **MINOR** — só transbordo do PATCH quando ele passaria de 9.
 
-Não há breaking change a sinalizar: quem consome é o `/update-claude`, e ele preserva
-o que o projeto customizou independentemente do número. Para saber qual versão um
-projeto carrega, veja o `.claude/.template.json` dele.
+Não há breaking change a sinalizar: o kit não é copiado para dentro de projeto
+nenhum, então não existe versão presa num repositório para divergir desta. O que vale
+em toda máquina é o commit em que o clone está.
 
-## Instalação global (sem copiar `.claude/` por projeto)
+## Instalação global
 
-Alternativa ao [modelo de cópia](#modelo-de-reuso): em vez de colar a pasta em cada
-repositório, o kit inteiro fica ligado ao seu perfil de usuário e vale em qualquer
-diretório — inclusive fora de repositório Git.
+O modelo de reuso do ARK: o kit inteiro fica ligado ao seu perfil de usuário e vale em
+qualquer diretório — inclusive fora de repositório Git.
 
 ### Passo a passo
 
@@ -190,12 +186,16 @@ duas vezes não duplica nada.
    continuam sendo chamados por `/commit`, `/start-issue`, `/review-pr`, …
 2. **Hooks** são registrados em `~/.claude/settings.json` com caminho absoluto.
 3. **`ARK_HOME`** e os [toggles](#toggles) vão para o bloco `env` global.
-4. **`karpathy-principles.md`** é importado por `@caminho` no `~/.claude/CLAUDE.md`
-   — no Windows um import evita o symlink de arquivo, que exige privilégio.
+4. **As rules genéricas** (`karpathy-principles.md` e `code-conventions.md`) são
+   importadas por `@caminho` no `~/.claude/CLAUDE.md` — no Windows um import evita o
+   symlink de arquivo, que exige privilégio. Por virem do clone, melhoria nelas chega
+   a todo projeto sem reinstalar nada.
 
-Nenhum arquivo é copiado, e nada é apagado sem aviso: pasta real de mesmo nome em
-`~/.claude/skills` é pulada, e só links que apontam para dentro do clone são
-removidos — skill sua de outra origem fica intacta.
+Nenhum arquivo é copiado, e nada que seja seu é apagado. Pasta real de mesmo nome em
+`~/.claude/skills` é comparada com a do clone: **idêntica**, vira link (é cópia
+redundante de uma instalação antiga, e como pasta ela nunca receberia melhoria
+nenhuma); **diferente**, é pulada com aviso e cabe a você resolver. Da poda, só saem
+links que apontam para dentro do clone — skill sua de outra origem fica intacta.
 
 ### Como atualizar
 
@@ -213,10 +213,8 @@ clone, então alteração em skill existente já vale sozinha:
 | adiciona skill ou comando novo | **sim** — falta o link |
 | renomeia ou remove uma skill | **sim** — sobra link órfão |
 
-O `/update-claude` **não** faz esse trabalho e nem deve: por decisão dele, nunca
-escreve fora do repositório. Os dois são pares de modelos diferentes — `/update-claude`
-atualiza o `.claude/` de um projeto que copiou, `/sync-global` atualiza os links no
-perfil do usuário.
+O `/sync-global` não escreve dentro de projeto nenhum. Quem cria e migra o `.claude/`
+de um repositório é a skill [`adopt-repo`](#como-adotar-um-repositório).
 
 ### O que continua sendo do projeto
 
@@ -228,15 +226,15 @@ skill `adopt-repo` ou pela `setup-matt-pocock-skills`:
 |----------|---------|
 | `CLAUDE.md`, `CONTEXT.md` | stack, comandos, glossário de domínio |
 | `docs/agents/` (`issue-tracker.md`, `domain.md`, `triage-labels.md`) | onde ficam as issues deste repo e com que vocabulário |
-| `rules/code-conventions.md` → "Restrições deste projeto" | preenchido do zero por projeto |
+| `rules/project-constraints.md` | restrições **deste** repositório, preenchidas do zero |
 | `rules/work-calibration.md` | limiar de quebra de issue **deste** projeto |
 | `rules/<linguagem>-conventions.md` | depende da stack |
 | `.claude/settings.local.json` | permissões com caminhos da máquina |
 | `.claude/current-issue`, `.claude/board.env` | estado de sessão / cache do board |
 
 Os scripts chamados pelos comandos resolvem por `${ARK_HOME:-.claude}`: com a
-instalação global apontam para o clone; numa cópia local antiga, para o `.claude/`
-do projeto. Os dois modelos convivem.
+instalação global apontam para o clone, e o fallback para `.claude/` só cobre um
+projeto do Modelo de cópia que ainda não migrou.
 
 ## Manutenção deste repositório
 

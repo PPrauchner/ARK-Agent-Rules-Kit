@@ -16,13 +16,15 @@ Sem branches novas — só tags anotadas + GitHub Releases na `versao_vigente`.
 | Situação | Bump | Exemplo |
 |---|---|---|
 | Skill ou comando **novo** | MAJOR | `v1.0.0` → `v2.0.0` |
+| Skill ou comando **removido** | MAJOR | `v4.1.0` → `v5.0.0` |
 | **Alteração** de skill/comando existente | PATCH | `v2.0.0` → `v2.0.1` |
 | PATCH passaria de 9 | rola para o MINOR | `v1.0.9` → `v1.1.0` |
 | MINOR passaria de 9 | continua contando | `v1.9.0` → `v1.10.0` |
 
-Não é semver porque não há breaking change a sinalizar: quem consome é o
-`/update-claude`, e ele preserva o que o projeto customizou independentemente do
-número. O MAJOR marca capacidade nova, não incompatibilidade.
+Não é semver porque não há breaking change a sinalizar: o kit não é copiado para
+dentro de projeto nenhum, então não existe versão presa num repositório para divergir
+desta. O MAJOR marca **mudança no conjunto de capacidades** — uma entrando ou
+saindo —, não incompatibilidade.
 
 O MINOR **nunca** invade o MAJOR: um acúmulo de patches não pode se disfarçar de
 skill nova. O dígito do meio existe só como transbordo do PATCH.
@@ -41,13 +43,6 @@ merece tag própria.
   da `v2.0.0` (board sync trouxe o `/open-pr` junto).
 
 ## Procedimento
-
-**Antes do tag, suba a `tag` de [`.claude/.template.json`](../.claude/.template.json)
-para a versão que vai sair, e commite.** Esse marcador viaja na cópia crua da pasta,
-e é ele que dá base ao primeiro `/update-claude` de quem copiou à mão. Marcador
-atrasado é pior que marcador ausente: ele afirma uma base falsa com cara de fato, que
-é exatamente o que o [ADR-0001](./adr/0001-nao-inferir-a-versao-de-origem.md) recusa
-fazer por heurística. Nada automatiza essa checagem — o hook de drift não a cobre.
 
 ```bash
 git tag -a vX.Y.Z -m "vX.Y.Z - <resumo>"
