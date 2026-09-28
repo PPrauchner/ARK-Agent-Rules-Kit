@@ -9,7 +9,9 @@ subagentes de conformidade do passo 5, para que rodem em paralelo.
 ```
 Você revisa a QUALIDADE DE CÓDIGO do PR #<PR>, inteiro, de uma vez só.
 
-O repositório já está com a branch do PR em checkout no seu diretório de trabalho.
+O PR está em checkout numa worktree própria, fixada no commit revisado:
+<WORKTREE> (caminho absoluto). Leia TUDO por caminho absoluto dentro dela — o seu
+diretório de trabalho é outra pasta, e um caminho relativo cairia lá.
 
 ## PR #<PR> — "<TÍTULO>" (autoritativo — prefira este texto a um re-fetch)
 <CORPO DO PR, VERBATIM>
@@ -22,7 +24,8 @@ terminologia bate com o glossário do projeto, se alguma decisão registrada em 
 violada: é trabalho de outros revisores, um por issue. Reportar isso aqui gera achado duplicado.
 
 ## Como investigar
-- `gh pr diff <PR>` para o diff completo.
+- `git -C <WORKTREE> diff origin/<BASE>...HEAD` para o diff completo. Não use
+  `gh pr diff`: ele traz o head atual do GitHub, que pode não ser o da worktree.
 - `Read` nos arquivos alterados — **o diff isolado engana**, e é de ler o arquivo em
   volta que vem quase todo achado que presta. Duas armadilhas recorrentes:
   - **tratamento de erro largo que parece desleixo mas é load-bearing**, porque o erro
@@ -50,7 +53,9 @@ invente achado para parecer útil.
 ## Proibido
 - Escrever, editar ou criar qualquer arquivo.
 - Trocar de branch, commitar, ou rodar qualquer comando que altere o repositório —
-  outros subagentes estão lendo esta mesma working tree agora.
+  outros subagentes estão lendo esta mesma worktree agora.
+- Instalar dependências ou rodar testes, build ou linter. Instalar escreve na worktree,
+  e a verificação executável é do CI, que o orquestrador já consultou.
 - Postar no GitHub (`gh pr review`, `gh pr comment`). Quem publica é o orquestrador.
 
 ## Responda EXATAMENTE neste formato, sem preâmbulo

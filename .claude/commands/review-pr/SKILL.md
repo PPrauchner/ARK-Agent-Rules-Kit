@@ -26,28 +26,48 @@ branch.
 
 ## Workflow
 
-### 1. Pré-condição: working tree limpa
-O passo de qualidade faz checkout da branch do PR, então a árvore precisa estar limpa.
+### 1. Buscar dados do PR
 ```bash
-git status --porcelain
-git rev-parse --abbrev-ref HEAD   # branch atual — guardar para restaurar no fim
-```
-Se houver qualquer mudança pendente, **pare** e peça ao usuário para commitar ou
-`git stash` antes de continuar.
-
-**Guarde o nome da branch atual.** A restauração no passo 5 usa esse nome, nunca
-`git checkout -` — `-` significa "a branch anterior", que deixa de ser a certa assim
-que qualquer outra troca acontecer no meio.
-
-E restaure **em toda saída antecipada**: subagente que aborta, `gh` que erra, revisão
-interrompida. Terminar largado na branch do PR é pior que não revisar — o próximo
-`/commit` comita lá.
-
-### 2. Buscar dados do PR
-```bash
-gh pr view $ARGUMENTS --json number,title,body,headRefName,baseRefName,state,author,additions,deletions,files,url
+gh pr view $ARGUMENTS --json number,title,body,headRefName,headRefOid,baseRefName,state,author,additions,deletions,files,url
 ```
 Extraia do corpo as issues referenciadas (`Closes #N`, `Fixes #N`, `Part of #N`).
+Guarde o `headRefOid`: é o commit revisado, do começo ao fim.
+
+### 2. Preparar a worktree
+A revisão acontece numa worktree própria, com HEAD destacado no `headRefOid`. A pasta
+principal **nunca é tocada nem lida**: não importa se ela tem pendências nem em que
+branch está, e outra sessão trabalhando nela não é afetada pela revisão (nem a afeta).
+```bash
+git worktree prune                           # registro órfão de revisão interrompida
+git fetch origin pull/<N>/head <baseRefName>
+git worktree add --detach <scratchpad>/pr-<N> <headRefOid>
+```
+- **Onde:** no scratchpad da sessão — caminho liberado sem prompt de permissão, o que
+  importa com vários subagentes lendo em paralelo. Sem scratchpad declarado, use
+  `mktemp -d`.
+- **Por que destacado, e não uma branch local:** não sobra branch se a limpeza falhar,
+  duas sessões revisando o mesmo PR não colidem (o git recusa a mesma *branch* em duas
+  worktrees, não o mesmo commit), e a revisão fica presa ao commit lido mesmo que o
+  autor dê push no meio.
+- **Por que o SHA do `gh`, e não `FETCH_HEAD`:** o `FETCH_HEAD` é do repositório
+  inteiro — um `fetch` de outra sessão no meio o sobrescreve.
+
+Daqui em diante, **todo caminho é absoluto, dentro da worktree** (`<worktree>`). O
+diretório de trabalho da sessão continua sendo a pasta principal, então um caminho
+relativo cairia nela. O diff do PR é:
+```bash
+git -C <worktree> diff origin/<baseRefName>...HEAD
+```
+Três pontos: compara com o merge-base, o mesmo recorte que o GitHub mostra. Não use
+`gh pr diff` — ele traz o head atual do GitHub, que pode já não ser o da worktree.
+
+Remova a worktree **em toda saída**, inclusive a antecipada — subagente que aborta,
+`gh` que erra, revisão interrompida:
+```bash
+git worktree remove --force <worktree>
+```
+Esquecê-la não quebra nada — ocupa disco e polui o `git worktree list`, e o `prune` da
+próxima revisão recolhe o registro —, mas é resto que a revisão deixou.
 
 ### 3. Estabelecer o baseline (o que deveria ter sido feito)
 - **Com issue(s) vinculada(s):** busque cada uma com o comando que
@@ -63,14 +83,19 @@ Extraia do corpo as issues referenciadas (`Closes #N`, `Fixes #N`, `Part of #N`)
   eles. Num monorepo, o `CONTEXT.md` da raiz costuma não ser o certo — é por isso que
   a ordem importa.
 
+  Procure tudo isso **na worktree**, não na pasta principal: o baseline é a
+  documentação na versão do PR. Um PR que acrescenta um termo ao glossário e passa a
+  usá-lo está conforme; contra o glossário de uma branch qualquer, não estaria.
+- **CI:** `gh pr checks $ARGUMENTS`. Testes não rodam na revisão — a worktree nasce
+  sem dependências instaladas, e o CI é o portão que roda em ambiente limpo. **CI
+  vermelho é 🔴 BLOQUEADOR**; checks pendentes entram no veredito como pendentes; PR
+  sem CI, uma linha dizendo isso.
+
 ### 4. Qualidade de código — preparar o subagente
-Com a árvore limpa (passo 1), traga o diff do PR para o working tree local:
-```bash
-gh pr checkout $ARGUMENTS
-```
 Preencha o template de [QUALITY-REVIEW-BRIEF.md](./QUALITY-REVIEW-BRIEF.md) com o
 título e o corpo do PR **verbatim** — o subagente não vê esta conversa, e é do corpo
-que ele tira os pontos de julgamento que o autor deixou em aberto.
+que ele tira os pontos de julgamento que o autor deixou em aberto. Preencha também o
+caminho da worktree e a branch base: é deles que sai o diff.
 
 **Não spawne ainda:** o passo 5 dispara este agente na mesma mensagem que os de
 conformidade, para que rodem concorrentes. Se a conformidade for inline (1 issue,
@@ -85,8 +110,6 @@ issue*.
 Ele roda **sempre**, inclusive com `PR_REVIEW_PARALLEL=off`: aquele toggle existe para
 não multiplicar agentes de conformidade, e a qualidade é sempre um agente só.
 
-**Não restaure a branch ainda** — o passo 5 precisa da branch do PR em checkout.
-
 ### 5. Conformidade — o que deveria vs. o que foi feito
 
 Com **2 ou mais issues** vinculadas e `PR_REVIEW_PARALLEL` diferente de `off`
@@ -95,12 +118,13 @@ issues vira 4 revisões independentes em vez de uma análise que dilui as quatro
 
 1. Para cada issue, preencha o template de
    [ISSUE-REVIEW-BRIEF.md](./ISSUE-REVIEW-BRIEF.md) com o corpo da issue **verbatim**
-   — o subagente não vê esta conversa. Passe também os **caminhos** do glossário e
-   dos ADRs que você localizou no passo 3: o subagente não repete essa busca.
+   — o subagente não vê esta conversa. Passe também o caminho da worktree, a branch
+   base e os **caminhos absolutos** (na worktree) do glossário e dos ADRs que você
+   localizou no passo 3: o subagente não repete essa busca.
 2. Spawne todos com `Agent` (`subagent_type: general-purpose`) **numa única
    mensagem**, junto com o agente de qualidade do passo 4, para que rodem
    concorrentemente.
-3. Eles compartilham esta working tree em modo leitura. Por isso o brief proíbe
+3. Eles compartilham a worktree em modo leitura. Por isso o brief proíbe
    escrever, commitar e trocar de branch: um subagente que mexesse na árvore
    corromperia a revisão dos outros.
 4. Use apenas o relatório final de cada um — o formato de resposta já é o que entra no
@@ -110,21 +134,18 @@ issues vira 4 revisões independentes em vez de uma análise que dilui as quatro
 mesmo. Spawnar um subagente para uma issue só custa contexto e tempo sem paralelizar
 nada.
 
-```bash
-gh pr diff $ARGUMENTS
-```
-Compare o baseline (passo 3) com o diff. Procure:
+Compare o baseline (passo 3) com o diff do passo 2. Procure:
 - Critérios de aceite da issue não cumpridos (DoD incompleta).
 - Divergências de terminologia vs. `CONTEXT.md` (campo/conceito fora do glossário).
 - Violações de decisões registradas em `docs/adr/`.
+- Alteração no próprio glossário ou num ADR que o corpo do PR não justifica — o
+  baseline é a versão do PR, então um PR que reescreve a regra para caber nela passaria
+  calado. É 🟡 DESVIO.
 
-Leia com `Read` os arquivos alterados que precisarem de contexto.
+Leia com `Read` os arquivos alterados que precisarem de contexto — pelo caminho
+absoluto na worktree.
 
-Quando **todos** os subagentes tiverem terminado, restaure a branch guardada no
-passo 1, pelo nome:
-```bash
-git checkout <branch guardada no passo 1>
-```
+Quando **todos** os subagentes tiverem terminado, remova a worktree (passo 2).
 
 ### 6. Fundir em um veredito único
 Severidade dos achados, venham eles da conformidade ou da qualidade:
@@ -141,10 +162,12 @@ não pertence a nenhuma issue.
 Estrutura do veredito (exibir **inline**, não salvar arquivo):
 
 ```markdown
-## Revisão — PR #<N> [vs. Issues #<A>, #<B> | DoD inferida do PR]
+## Revisão — PR #<N> @ `<headRefOid curto>` [vs. Issues #<A>, #<B> | DoD inferida do PR]
 
 **Veredito:** APROVAR / SOLICITAR MUDANÇAS / COMENTAR
 [1-2 frases: o que foi entregue e o julgamento geral.]
+
+**CI:** ✓ verde | 🔴 BLOQUEADOR: vermelho em <check> | pendente | sem CI
 
 ### Issue #<A> — ✓ DoD cumprida
 [uma frase]
@@ -183,8 +206,16 @@ não tem a quem endereçar. Diga o estado do PR no relatório.
 4. **Nada** — não escrever no GitHub, só deixar o veredito no chat
 
 ### 8. Executar a ação escolhida
-Rode apenas o comando `gh` correspondente à escolha. Confirme no relatório final em
-qual branch a sessão ficou.
+Antes de publicar, confira que o PR não andou:
+```bash
+gh pr view $ARGUMENTS --json headRefOid --jq .headRefOid
+```
+Se mudou, **pare** e avise ("revisei `<antigo>`, o PR agora está em `<novo>`") antes
+de publicar qualquer coisa: um `--approve` no GitHub aprova o head atual — um commit
+que ninguém revisou.
+
+Rode apenas o comando `gh` correspondente à escolha. Confirme no relatório final que a
+worktree foi removida.
 
 **Não** mova issues em board. Não é que board seja assunto de outro comando — o
 `/start-issue` e o `/open-pr` movem, via `board-move.sh`. É que **revisar não muda o
