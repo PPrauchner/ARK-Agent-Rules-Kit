@@ -87,5 +87,6 @@ Resumo de uma linha por release; as notas completas estão na aba *Releases*.
 | `v6.0.0` | Instalação global vira o **único** modelo: `/update-claude` removido, `adopt-repo` cria e migra o `.claude/` do projeto, `code-conventions.md` partido em genérico importado + `project-constraints.md`. |
 | `v6.0.1` | `/review-pr` numa worktree isolada, com HEAD destacado no commit do PR: não toca a pasta principal, CI vermelho bloqueia, head reconferido antes de publicar. |
 | `v6.0.2` | `/start-issue`: slug da branch limitado a 4 palavras e 30 caracteres, a partir de um resumo curto. |
+| `v6.0.3` | `current-issue` gravado e lido na raiz do projeto (`current-issue.sh`), não no cwd do shell; hook de Stop confere repositórios filhos quando o projeto não é git. |
 
-**Próxima:** skill/comando novo ou removido → `v7.0.0`; alteração → `v6.0.3`.
+**Próxima:** skill/comando novo ou removido → `v7.0.0`; alteração → `v6.0.4`.
