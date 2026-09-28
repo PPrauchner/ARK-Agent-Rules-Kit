@@ -7,28 +7,48 @@
 # registrado globalmente (~/.claude/settings.json), "$(dirname "$0")" apontaria
 # sempre para o clone do ARK. CLAUDE_PROJECT_DIR vem do Claude Code; o cwd é o
 # fallback para invocação manual.
-ROOT=$(git -C "${CLAUDE_PROJECT_DIR:-$PWD}" rev-parse --show-toplevel 2>/dev/null)
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
+HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-if [ -z "$ROOT" ]; then
-    exit 0
+# O projeto pode não ser um repositório: uma pasta de trabalho que agrupa
+# repositórios irmãos (o .claude/ e o CLAUDE.md ficam fora de todos eles). Nesse
+# caso, confere cada subpasta de primeiro nível que for um repositório git.
+REPOS=()
+ROOT=$(git -C "$PROJECT_DIR" rev-parse --show-toplevel 2>/dev/null)
+if [ -n "$ROOT" ]; then
+    REPOS+=("$ROOT")
+else
+    for dir in "$PROJECT_DIR"/*/; do
+        [ -e "$dir.git" ] && REPOS+=("${dir%/}")
+    done
 fi
 
-cd "$ROOT"
+[ "${#REPOS[@]}" -eq 0 ] && exit 0
 
-STAGED=$(git diff --cached --name-only 2>/dev/null)
-UNSTAGED=$(git diff --name-only 2>/dev/null)
-UNTRACKED=$(git ls-files --others --exclude-standard 2>/dev/null)
+# A issue ativa mora na raiz do projeto, não do repositório — mesmo resolvedor que
+# o /start-issue usa para gravar.
+ISSUE=$(cd "$PROJECT_DIR" && bash "$HOOK_DIR/../scripts/current-issue.sh" get 2>/dev/null)
 
-HAS_CHANGES=false
-[ -n "$STAGED" ]    && HAS_CHANGES=true
-[ -n "$UNSTAGED" ]  && HAS_CHANGES=true
-[ -n "$UNTRACKED" ] && HAS_CHANGES=true
+HEADER_SHOWN=false
+for repo in "${REPOS[@]}"; do
+    STAGED=$(git -C "$repo" diff --cached --name-only 2>/dev/null)
+    UNSTAGED=$(git -C "$repo" diff --name-only 2>/dev/null)
+    UNTRACKED=$(git -C "$repo" ls-files --others --exclude-standard 2>/dev/null)
 
-if [ "$HAS_CHANGES" = true ]; then
-    echo ""
-    echo "┌─────────────────────────────────────────────┐"
-    echo "│  ⚠️  Mudanças não commitadas nesta sessão   │"
-    echo "└─────────────────────────────────────────────┘"
+    [ -z "$STAGED$UNSTAGED$UNTRACKED" ] && continue
+
+    if [ "$HEADER_SHOWN" = false ]; then
+        echo ""
+        echo "┌─────────────────────────────────────────────┐"
+        echo "│  ⚠️  Mudanças não commitadas nesta sessão   │"
+        echo "└─────────────────────────────────────────────┘"
+        HEADER_SHOWN=true
+    fi
+
+    if [ "$repo" != "$ROOT" ]; then
+        echo ""
+        echo "📁 $(basename "$repo")"
+    fi
 
     if [ -n "$STAGED" ]; then
         echo ""
@@ -47,23 +67,22 @@ if [ "$HAS_CHANGES" = true ]; then
         echo "🆕 Novos arquivos (untracked):"
         echo "$UNTRACKED" | sed 's/^/   /'
     fi
+done
 
-    ISSUE_FILE="$ROOT/.claude/current-issue"
-    ISSUE=""
-    if [ -f "$ISSUE_FILE" ]; then
-        ISSUE=$(cat "$ISSUE_FILE" | tr -d '[:space:]')
-        echo ""
-        echo "📌 Issue ativa: #$ISSUE"
-    fi
+[ "$HEADER_SHOWN" = false ] && exit 0
 
+if [ -n "$ISSUE" ]; then
     echo ""
-    echo "💡 Considere commitar antes de encerrar:"
-    if [ -n "$ISSUE" ]; then
-        echo "   git add -A && git commit -m \"tipo: descrição (#$ISSUE)\""
-    else
-        echo "   git add -A && git commit -m \"tipo: descrição\""
-    fi
-    echo ""
+    echo "📌 Issue ativa: #$ISSUE"
 fi
+
+echo ""
+echo "💡 Considere commitar antes de encerrar:"
+if [ -n "$ISSUE" ]; then
+    echo "   git add -A && git commit -m \"tipo: descrição (#$ISSUE)\""
+else
+    echo "   git add -A && git commit -m \"tipo: descrição\""
+fi
+echo ""
 
 exit 0
