@@ -79,15 +79,21 @@ Só **depois** da confirmação, os três efeitos colaterais, nesta ordem:
 ```bash
 mkdir -p .claude && echo "$ARGUMENTS" > .claude/current-issue
 bash "${ARK_HOME:-.claude}/scripts/board-move.sh" $ARGUMENTS in-progress
-bash "${ARK_HOME:-.claude}/scripts/ensure-branch.sh" issue $ARGUMENTS "<título da issue>"
+bash "${ARK_HOME:-.claude}/scripts/ensure-branch.sh" issue $ARGUMENTS "<resumo curto>"
 ```
+
+O terceiro argumento é um **resumo de 2 a 4 palavras** do assunto da issue, não o
+título inteiro — `issue/21-convite-conta-existente`, não
+`issue/21-convite-de-e-mail-com-conta-existente-cria-so-o-vinc`. Omita artigos e
+preposições. O script corta em 4 palavras e 30 caracteres de qualquer jeito, mas o
+corte cego do título sai pior que um resumo escolhido.
 
 **`board-move.sh`** move a issue para *In progress* no GitHub Projects. É silencioso
 com `BOARD_SYNC=off` (`.claude/settings.json`) e **nunca falha** — se o board não
 estiver configurado, ou se o tracker deste repo não for GitHub, ele avisa e o
 trabalho segue. Não trate aviso de board como erro.
 
-**`ensure-branch.sh`** cria `issue/<N>-<slug-do-título>` a partir da branch atual
+**`ensure-branch.sh`** cria `issue/<N>-<slug>` a partir da branch atual
 **apenas** se ela for um tronco (`main`, `master`, `dev`, `develop`, `development`
 ou a branch default do repositório). Fora do tronco ele não faz nada e a issue é
 implementada na branch atual — é assim que duas issues relacionadas empilham commits

@@ -63,12 +63,16 @@ unaccent() {
         -e 's/ç/c/g; s/ñ/n/g'
 }
 
+# No maximo 4 palavras e 30 caracteres: o slug identifica a branch, nao
+# descreve a issue. Quem chama passa um resumo curto; o corte aqui e so a rede
+# de seguranca para quando vier o titulo inteiro.
 slugify() {
     printf '%s' "$1" \
         | tr 'A-ZÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ' 'a-záàâãäéèêëíìîïóòôõöúùûüçñ' \
         | unaccent \
         | sed 's/[^a-z0-9]\{1,\}/-/g; s/^-//; s/-$//' \
-        | cut -c1-50 \
+        | cut -d- -f1-4 \
+        | cut -c1-30 \
         | sed 's/-$//'
 }
 

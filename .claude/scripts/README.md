@@ -15,7 +15,8 @@ Utilitários chamados **por um comando** (ou por você, na mão). Diferente dos
 - **[ensure-branch.sh](./ensure-branch.sh)** — cria a branch de trabalho quando a
   sessão está num tronco (`main`, `master`, `dev`, `develop`, `development` ou a
   branch default do repositório, lida de `refs/remotes/origin/HEAD`). Chamado por
-  `/start-issue` (`issue/<N>-<slug>`) e `/afk-queue` (`afk/<números>`, com faixas:
+  `/start-issue` (`issue/<N>-<slug>`, slug de no máximo 4 palavras e 30
+  caracteres, a partir de um resumo curto da issue) e `/afk-queue` (`afk/<números>`, com faixas:
   `1 2 3 7 20` → `afk/1-3_7_20`, hífen é "até" e underscore separa). Fora do tronco
   não faz nada. **Falha ruidosamente** (exit ≠ 0) se não conseguir criar a branch —
   ao contrário do `board-move.sh`, e de propósito: seguir sem o board não custa nada,
@@ -23,7 +24,7 @@ Utilitários chamados **por um comando** (ou por você, na mão). Diferente dos
   evitar. Se a branch já existe, faz checkout dela e avisa. Imprime no stdout a
   branch resultante, ou nada quando não havia o que fazer.
   ```bash
-  bash .claude/scripts/ensure-branch.sh issue 123 "Título da issue"
+  bash .claude/scripts/ensure-branch.sh issue 123 "resumo curto"
   bash .claude/scripts/ensure-branch.sh afk 12 15 20
   ```
 - **[link-skills.sh](./link-skills.sh)** — cria symlinks de `skills/*` em
