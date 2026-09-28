@@ -30,8 +30,12 @@ repositório sem histórico, siga o idioma da documentação do projeto.
 
 ### 3. Identificar issue ativa
 ```bash
-cat .claude/current-issue 2>/dev/null || echo "(nenhuma)"
+issue=$(bash "${ARK_HOME:-.claude}/scripts/current-issue.sh" get); echo "${issue:-(nenhuma)}"
 ```
+
+O script lê da raiz do projeto, onde o `/start-issue` gravou — não do cwd, que pode
+ter derivado para dentro de um subrepositório. Não troque por `cat
+.claude/current-issue`.
 
 Para ler a issue, use o comando que [`docs/agents/issue-tracker.md`](../../../docs/agents/issue-tracker.md)
 define para este repositório. **Se o arquivo não existir**, assuma GitHub e avise em
@@ -46,7 +50,7 @@ suposição errada estraga N issues em silêncio; aqui o usuário lê o aviso e 
 
 Receita GitHub:
 ```bash
-gh issue view $(cat .claude/current-issue) --json number,title,body,labels 2>/dev/null
+gh issue view "$(bash "${ARK_HOME:-.claude}/scripts/current-issue.sh" get)" --json number,title,body,labels 2>/dev/null
 ```
 
 ### 4. Inspecionar mudanças

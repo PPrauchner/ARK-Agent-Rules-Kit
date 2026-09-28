@@ -77,7 +77,7 @@ Uma confirmação só, para tudo. **Aguarde.**
 Só **depois** da confirmação, os três efeitos colaterais, nesta ordem:
 
 ```bash
-mkdir -p .claude && echo "$ARGUMENTS" > .claude/current-issue
+bash "${ARK_HOME:-.claude}/scripts/current-issue.sh" set $ARGUMENTS
 bash "${ARK_HOME:-.claude}/scripts/board-move.sh" $ARGUMENTS in-progress
 bash "${ARK_HOME:-.claude}/scripts/ensure-branch.sh" issue $ARGUMENTS "<resumo curto>"
 ```
@@ -87,6 +87,12 @@ título inteiro — `issue/21-convite-conta-existente`, não
 `issue/21-convite-de-e-mail-com-conta-existente-cria-so-o-vinc`. Omita artigos e
 preposições. O script corta em 4 palavras e 30 caracteres de qualquer jeito, mas o
 corte cego do título sai pior que um resumo escolhido.
+
+**`current-issue.sh`** grava na raiz do **projeto**, não no cwd do shell: o
+ancestral mais próximo com `.claude/rules/`, senão o toplevel do git. Não troque
+por `echo … > .claude/current-issue` — o cwd deriva ao longo da sessão (basta um
+`cd <repo>` antes), e o arquivo nasce num `.claude/` que o `/commit` não lê e que o
+git do repositório não ignora.
 
 **`board-move.sh`** move a issue para *In progress* no GitHub Projects. É silencioso
 com `BOARD_SYNC=off` (`.claude/settings.json`) e **nunca falha** — se o board não

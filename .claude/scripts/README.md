@@ -27,6 +27,19 @@ Utilitários chamados **por um comando** (ou por você, na mão). Diferente dos
   bash .claude/scripts/ensure-branch.sh issue 123 "resumo curto"
   bash .claude/scripts/ensure-branch.sh afk 12 15 20
   ```
+- **[current-issue.sh](./current-issue.sh)** — lê e grava a issue ativa em
+  `<raiz do projeto>/.claude/current-issue`. Gravado pelo `/start-issue`, lido pelo
+  `/commit` e pelo hook `stop-commit-reminder.sh`. A raiz é `CLAUDE_PROJECT_DIR`
+  quando definido, senão o ancestral mais próximo do cwd com `.claude/rules/`
+  (a pasta que a `adopt-repo` semeia), senão o toplevel do git. Existe porque o
+  caminho relativo `.claude/current-issue` segue o cwd do shell, que deriva na
+  sessão: depois de um `cd <repo>`, o arquivo nascia dentro do repositório — sem
+  estar no `.gitignore` dele — e o `/commit` lia outro.
+  ```bash
+  bash .claude/scripts/current-issue.sh set 123
+  bash .claude/scripts/current-issue.sh get    # número, ou nada
+  bash .claude/scripts/current-issue.sh path   # onde o arquivo mora
+  ```
 - **[link-skills.sh](./link-skills.sh)** — cria symlinks de `skills/*` em
   `~/.claude/skills`, deixando as skills deste projeto disponíveis em qualquer outro.
   Preferência pessoal, não etapa obrigatória: sem rodar, as skills seguem funcionando

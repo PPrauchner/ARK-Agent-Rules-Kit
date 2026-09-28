@@ -122,7 +122,7 @@ criado à mão:
 | Arquivo | Quem cria | Versionar? |
 |---------|-----------|------------|
 | `settings.local.json` | você, a partir do `.example` | **não** — tem caminhos da sua máquina |
-| `current-issue` | `/start-issue` | **não** — estado da sessão |
+| `current-issue` | `/start-issue`, via `current-issue.sh` — sempre na raiz do projeto, nunca no cwd | **não** — estado da sessão |
 | `board.env` | `board-move.sh` (cache dos IDs do board) | **não** — específico do repositório |
 
 Todos já estão em `.claude/.gitignore`, que a `adopt-repo` copia junto.
