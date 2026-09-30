@@ -12,11 +12,11 @@ Três níveis:
 **1. Módulo** — todo `.py` começa com um bloco descritivo:
 ```python
 """
-Resumo de uma linha do que o módulo faz.
+One-line summary of what the module does.
 
-Responsabilidades:
-- Primeira responsabilidade do módulo.
-- Segunda responsabilidade do módulo.
+Responsibilities:
+- First responsibility of the module.
+- Second responsibility of the module.
 """
 ```
 
@@ -24,24 +24,24 @@ Responsabilidades:
 óbvio:
 ```python
 def process_item(item: Item, options: Options) -> Result:
-    """Processa um item de acordo com as opções fornecidas.
+    """Processes an item according to the given options.
 
     Args:
-        item: Item de entrada a ser processado.
-        options: Opções que controlam o processamento.
+        item: The input item to process.
+        options: Options that control the processing.
 
     Returns:
-        O resultado do processamento.
+        The processing result.
     """
 ```
 
 **3. Classe** — docstring na classe e nos métodos públicos não-triviais:
 ```python
 class Pipeline:
-    """Orquestra as etapas de execução de um processo.
+    """Orchestrates the execution steps of a process.
 
     Attributes:
-        steps: Etapas na ordem de execução.
+        steps: Steps in execution order.
     """
 ```
 
