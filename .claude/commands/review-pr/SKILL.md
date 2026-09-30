@@ -187,8 +187,14 @@ Tanto as seções por issue quanto a de qualidade são os relatórios dos subage
 **colados como vieram** — o formato dos briefs já é este. Não reescreva nem resuma:
 reescrever achado de revisão é como se perde a referência de arquivo/linha.
 
-Omita seções e severidades vazias. Qualquer BLOQUEADOR torna o veredito PRECISA DE
-MUDANÇAS. Sem issues vinculadas, use uma única seção "Conformidade (DoD inferida do
+Omita seções e severidades vazias. O veredito sai do pior achado:
+
+- algum BLOQUEADOR (CI vermelho incluso) → **PRECISA DE MUDANÇAS**
+- algum DESVIO, ou CI pendente → **COM RESSALVAS**
+- só MENOR, ou nada → **PRONTO PARA MERGE**
+
+MENOR não pesa: se um nit bastasse, quase nenhum PR ficaria pronto. PR sem CI e DoD
+inferida também não pesam — o veredito já os registra. Sem issues vinculadas, use uma única seção "Conformidade (DoD inferida do
 PR)" no lugar das seções por issue.
 
 O veredito descreve o **estado do PR**, não a ação: a ação (aprovar, solicitar
