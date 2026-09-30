@@ -65,3 +65,19 @@ def publish(resource: Resource, target: str) -> bool: ...
 def process(item):          # sem anotações
 def publish(...) -> Any:    # Any encobre erros
 ```
+
+---
+
+## Naming
+
+- Variáveis e funções em `snake_case`.
+- Classes em `PascalCase`.
+- Constantes em `UPPER_SNAKE_CASE`.
+
+```python
+MAX_RETRIES = 3
+
+class OrderPipeline: ...
+
+def load_orders(source_path: str) -> list[Order]: ...
+```

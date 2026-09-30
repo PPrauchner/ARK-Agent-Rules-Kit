@@ -37,8 +37,8 @@ linguagem que o projeto de fato usa:
 
 - Funções com responsabilidade única — se o nome precisar de "e"/"ou", dividir.
 - Nomes descritivos: sem abreviações opacas (`nd` → `node`, `sz` → `size`).
-- Constantes em `UPPER_SNAKE_CASE`; variáveis e funções em `snake_case`; classes em
-  `PascalCase`.
+- O casing de identificador (variáveis, funções, classes, constantes) é da linguagem:
+  vive no `<linguagem>-conventions.md`.
 - Comentários explicam *por quê*, não *o quê*.
 - Ver também [`karpathy-principles.md`](./karpathy-principles.md) (simplicidade
   primeiro, mudanças cirúrgicas, execução orientada a metas).
