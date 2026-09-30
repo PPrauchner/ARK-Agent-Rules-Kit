@@ -29,6 +29,8 @@ linguagens que o projeto de fato usa:
 
 - **Python** → `python-conventions.md`
 - **Java** → `java-conventions.md`
+- **JavaScript** → `javascript-conventions.md`
+- **TypeScript** → `typescript-conventions.md`
 - Outras linguagens: a `adopt-repo` cria `<linguagem>-conventions.md` no mesmo
   espírito (documentação, tipagem, naming).
 

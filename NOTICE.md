@@ -60,8 +60,8 @@ Copyright (c) 2026 Pietro Mendes Prauchner — MIT.
 - `.claude/skills/adopt-repo/` — adoção de repositórios já em andamento.
 - `.claude/commands/` — `/commit`, `/start-issue`, `/review-pr`, `/open-pr`,
   `/afk-queue`.
-- `.claude/rules/` — `code-conventions.md`, `python-conventions.md` e
-  `java-conventions.md`
+- `.claude/rules/` — `code-conventions.md`, `python-conventions.md`,
+  `java-conventions.md`, `javascript-conventions.md` e `typescript-conventions.md`
   (`karpathy-principles.md` não; ver acima).
 - `.claude/hooks/` — `stop-commit-reminder.sh`, hook de log de grill.
 - `.claude/scripts/` — `link-skills.sh`, `list-skills.sh`, `board-move.sh`.
