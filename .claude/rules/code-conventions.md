@@ -24,8 +24,8 @@
 
 As regras específicas de cada linguagem vivem em arquivos separados, para não
 assumir uma stack que o projeto não usa. Ao contrário deste arquivo, elas são
-**copiadas** para `.claude/rules/` do projeto pela skill `adopt-repo` — só a da
-linguagem que o projeto de fato usa:
+**copiadas** para `.claude/rules/` do projeto pela skill `adopt-repo` — só as das
+linguagens que o projeto de fato usa:
 
 - **Python** → `python-conventions.md`
 - Outras linguagens: a `adopt-repo` cria `<linguagem>-conventions.md` no mesmo

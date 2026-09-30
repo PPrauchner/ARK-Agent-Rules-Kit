@@ -163,14 +163,23 @@ Foque o grill no que o código não entrega:
 
 ### 7. Convenções da linguagem
 
-O clone traz apenas `python-conventions.md`. Copie para `.claude/rules/` **só** o
-arquivo da linguagem que o projeto usa:
+Um projeto pode ter mais de uma linguagem. Para **cada** linguagem com código
+mantido pelo projeto, copie para `.claude/rules/` o arquivo dela, se o clone tiver:
 
 ```bash
-cp -n "$ARK_HOME/rules/python-conventions.md" .claude/rules/
+cp -n "$ARK_HOME/rules/<linguagem>-conventions.md" .claude/rules/
 ```
 
-Se o projeto não for Python, escreva `.claude/rules/<linguagem>-conventions.md` no
+Conta só o código que o projeto escreve e mantém. Vendorizado e gerado não conta:
+`node_modules/`, `vendor/`, `dist/`, `build/`, lockfiles, código gerado por
+ferramenta.
+
+**Linguagem marginal é pergunta, não cópia.** Um único script `.sh`, um `.sql` solto:
+pergunte se vale copiar. Cada arquivo em `.claude/rules/` é contexto carregado em toda
+sessão, e o custo só se paga quando a linguagem é trabalhada de verdade. Não há limiar
+numérico — o que é marginal num repositório é central em outro.
+
+Linguagem sem arquivo no clone: escreva `.claude/rules/<linguagem>-conventions.md` no
 mesmo espírito (documentação, tipagem, naming) — direto no projeto; ofereça semeá-lo
 também no `$ARK_HOME` se for servir a outros repositórios.
 
@@ -198,7 +207,9 @@ existir, não toque nele.
 ### 10. Relatório final
 
 Uma tabela com os sete artefatos: criado / completado / já existia / pulado (e por
-quê). No ramo de migração, some a contagem do que foi apagado e **repita** a lista "Do
+quê). Para as convenções de linguagem, liste à parte quais linguagens foram
+**copiadas**, quais foram **perguntadas** (e a resposta) e quais foram **puladas** (e
+por quê). No ramo de migração, some a contagem do que foi apagado e **repita** a lista "Do
 projeto" que ficou de pé, que é decisão pendente.
 
 Termine dizendo o que ficou pendente de decisão humana — restrição que o usuário não
