@@ -33,9 +33,10 @@ nele migra rodando a `adopt-repo` (ver
   - `project-constraints.md` — semente vazia das **restrições de cada projeto**,
     copiada para o repositório pela `adopt-repo` e preenchida do zero ali
     (idealmente na sessão da skill `grill-with-docs`).
-  - `python-conventions.md` — docstrings e type hints, só relevante para
-    projetos Python. A `adopt-repo` copia para o projeto só o arquivo da linguagem
-    que ele usa; para outras stacks, cria o `<linguagem>-conventions.md` equivalente.
+  - `python-conventions.md`, `java-conventions.md` — documentação, tipagem e
+    naming de cada linguagem, só relevantes para projetos nela. A `adopt-repo`
+    copia para o projeto só os arquivos das linguagens que ele usa; para outras
+    stacks, cria o `<linguagem>-conventions.md` equivalente.
   - `work-calibration.md` — como **este** projeto divide trabalho: limiares de
     quebra de issue e o que conta como camada num commit. Também preenchido do
     zero por cada projeto; lido pelo `/start-issue` e pelo `/commit`.

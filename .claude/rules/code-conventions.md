@@ -28,6 +28,7 @@ assumir uma stack que o projeto não usa. Ao contrário deste arquivo, elas são
 linguagens que o projeto de fato usa:
 
 - **Python** → `python-conventions.md`
+- **Java** → `java-conventions.md`
 - Outras linguagens: a `adopt-repo` cria `<linguagem>-conventions.md` no mesmo
   espírito (documentação, tipagem, naming).
 
