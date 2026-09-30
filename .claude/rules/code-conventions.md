@@ -35,6 +35,8 @@ linguagens que o projeto de fato usa:
 - **C++** → `cpp-conventions.md`
 - **HTML** → `html-conventions.md`
 - **CSS** → `css-conventions.md`
+- **Shell (Bash)** → `shell-conventions.md`
+- **SQL** → `sql-conventions.md`
 - Outras linguagens: a `adopt-repo` cria `<linguagem>-conventions.md` no mesmo
   espírito (documentação, tipagem, naming).
 

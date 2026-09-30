@@ -35,7 +35,8 @@ nele migra rodando a `adopt-repo` (ver
     (idealmente na sessão da skill `grill-with-docs`).
   - `python-conventions.md`, `java-conventions.md`, `javascript-conventions.md`,
     `typescript-conventions.md`, `c-conventions.md`, `cpp-conventions.md`,
-    `html-conventions.md`, `css-conventions.md` —
+    `html-conventions.md`, `css-conventions.md`, `shell-conventions.md`,
+    `sql-conventions.md` —
     documentação, tipagem e
     naming de cada linguagem, só relevantes para projetos nela. A `adopt-repo`
     copia para o projeto só os arquivos das linguagens que ele usa; para outras
