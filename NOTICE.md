@@ -61,7 +61,8 @@ Copyright (c) 2026 Pietro Mendes Prauchner — MIT.
 - `.claude/commands/` — `/commit`, `/start-issue`, `/review-pr`, `/open-pr`,
   `/afk-queue`.
 - `.claude/rules/` — `code-conventions.md`, `python-conventions.md`,
-  `java-conventions.md`, `javascript-conventions.md` e `typescript-conventions.md`
+  `java-conventions.md`, `javascript-conventions.md`, `typescript-conventions.md`,
+  `c-conventions.md` e `cpp-conventions.md`
   (`karpathy-principles.md` não; ver acima).
 - `.claude/hooks/` — `stop-commit-reminder.sh`, hook de log de grill.
 - `.claude/scripts/` — `link-skills.sh`, `list-skills.sh`, `board-move.sh`.
