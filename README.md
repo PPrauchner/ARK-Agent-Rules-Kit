@@ -176,6 +176,28 @@ duas vezes não duplica nada.
 **3. Reinicie o `claude`** e confira com `/help` — devem aparecer `/tdd`, `/commit`,
 `/start-issue`, `/grill-me` e companhia, em qualquer diretório.
 
+Para confirmar o `ARK_HOME`, que o `/sync-global` e os scripts dos comandos usam para
+achar o clone, digite no prompt do `claude`:
+
+```
+! echo $ARK_HOME
+```
+
+Deve sair o caminho da pasta `.claude/` do clone; vazio significa que o instalador não
+rodou nesta máquina. A variável vive no bloco `env` do `~/.claude/settings.json`, e não
+no ambiente do sistema — por isso só existe nos processos que o Claude Code abre. Num
+terminal comum ela sai vazia mesmo com a instalação certa; ali, confira o arquivo:
+
+```powershell
+Select-String -Path "$HOME\.claude\settings.json" -Pattern ARK_HOME   # Windows
+```
+```bash
+grep ARK_HOME ~/.claude/settings.json                                  # Linux/macOS
+```
+
+A linha presente não garante que o clone ainda esteja lá: se ele foi movido, o
+caminho aponta para o vazio e é preciso reinstalar.
+
 > **Pré-requisitos além dos [gerais](#pré-requisitos):** `python3` no Linux/macOS
 > (para mesclar o `settings.json` sem apagar o que já está lá) e PowerShell 5.1+ no
 > Windows — o que já vem com o sistema serve, e o executável dele é `powershell`;
