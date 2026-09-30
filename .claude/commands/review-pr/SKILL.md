@@ -150,7 +150,7 @@ Quando **todos** os subagentes tiverem terminado, remova a worktree (passo 2).
 ### 6. Fundir em um veredito único
 Severidade dos achados, venham eles da conformidade ou da qualidade:
 
-- **BLOQUEADOR** — DoD não cumprida OU bug crítico. Impede aprovação.
+- **BLOQUEADOR** — DoD não cumprida OU bug crítico. Impede o merge.
 - **DESVIO** — divergência de requisito, terminologia (`CONTEXT.md`) ou decisão (`docs/adr/`).
 - **MENOR** — nit, convenção, sugestão de simplificação.
 
@@ -164,7 +164,7 @@ Estrutura do veredito (exibir **inline**, não salvar arquivo):
 ```markdown
 ## Revisão — PR #<N> @ `<headRefOid curto>` [vs. Issues #<A>, #<B> | DoD inferida do PR]
 
-**Veredito:** APROVAR / SOLICITAR MUDANÇAS / COMENTAR
+**Veredito:** PRONTO PARA MERGE / PRECISA DE MUDANÇAS / COM RESSALVAS
 [1-2 frases: o que foi entregue e o julgamento geral.]
 
 **CI:** ✓ verde | 🔴 BLOQUEADOR: vermelho em <check> | pendente | sem CI
@@ -187,9 +187,12 @@ Tanto as seções por issue quanto a de qualidade são os relatórios dos subage
 **colados como vieram** — o formato dos briefs já é este. Não reescreva nem resuma:
 reescrever achado de revisão é como se perde a referência de arquivo/linha.
 
-Omita seções e severidades vazias. Sem nenhum BLOQUEADOR, o PR é aprovável. Sem issues
-vinculadas, use uma única seção "Conformidade (DoD inferida do PR)" no lugar das
-seções por issue.
+Omita seções e severidades vazias. Qualquer BLOQUEADOR torna o veredito PRECISA DE
+MUDANÇAS. Sem issues vinculadas, use uma única seção "Conformidade (DoD inferida do
+PR)" no lugar das seções por issue.
+
+O veredito descreve o **estado do PR**, não a ação: a ação (aprovar, solicitar
+mudanças, comentar ou nada) é decidida no passo 7.
 
 ### 7. Apresentar e perguntar a ação
 Exiba o veredito.
