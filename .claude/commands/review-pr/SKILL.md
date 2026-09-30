@@ -207,7 +207,12 @@ Exiba o veredito.
 aprovar o que já foi mergeado não significa nada, e solicitar mudanças num PR fechado
 não tem a quem endereçar. Diga o estado do PR no relatório.
 
-**PR `OPEN`:** pergunte qual ação tomar:
+**PR `OPEN` e próprio** (`author.login` do passo 1 igual a `gh api user --jq .login`):
+o GitHub não deixa o autor aprovar nem solicitar mudanças, então não há menu.
+Pergunte só: **"Publico o veredito como comentário no PR? (s/n)"** — `s` é a ação 3
+abaixo; `n` é a ação 4.
+
+**PR `OPEN` de terceiro:** pergunte qual ação tomar:
 
 1. **Aprovar** — `gh pr review $ARGUMENTS --approve --body "<resumo>"`
 2. **Solicitar mudanças** — `gh pr review $ARGUMENTS --request-changes --body "<bloqueadores>"`
