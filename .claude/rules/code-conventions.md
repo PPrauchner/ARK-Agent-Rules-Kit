@@ -33,6 +33,8 @@ linguagens que o projeto de fato usa:
 - **TypeScript** → `typescript-conventions.md`
 - **C** → `c-conventions.md`
 - **C++** → `cpp-conventions.md`
+- **HTML** → `html-conventions.md`
+- **CSS** → `css-conventions.md`
 - Outras linguagens: a `adopt-repo` cria `<linguagem>-conventions.md` no mesmo
   espírito (documentação, tipagem, naming).
 
