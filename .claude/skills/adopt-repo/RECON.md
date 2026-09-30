@@ -64,8 +64,8 @@ O lockfile decide o gerenciador de pacotes — `package.json` não diz se é npm
 Quando houver mais de um lockfile, isso é uma contradição para o grill, não para você
 resolver.
 
-A linguagem detectada aqui decide qual `<linguagem>-conventions.md` é copiado do
-`$ARK_HOME` no passo 7 da skill.
+As linguagens detectadas aqui decidem quais `<linguagem>-conventions.md` são copiados
+do `$ARK_HOME` no passo 7 da skill.
 
 ## 3. Domínio (matéria-prima do grill, não conclusão)
 
